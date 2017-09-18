@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <link rel="stylesheet" href="../zTree_v3/css/metroStyle/metroStyle.css">
+    <style type="text/css">
+    .main {
+        display: flex;
+    }
+
+    .ctn {
+        padding:0px 20px 20px;
+        border: 1px solid #eee;
+        border-radius: 5px;
+    }
+
+    .btn {
+        cursor: pointer;
+    }
+
+    .original-ctn {
+        width: 300px;
+        margin-right: 20px;
+    }
+    .tree-name {
+        background-color: #eee;
+        text-align: center;
+        padding: 5px 0;
+        border-radius: 5px;
+    }
+    </style>
+</head>
+
+<body>
+    <div class="main">
+        <div class="ctn original-ctn">
+            <p class="tree-name">待选择树</p>
+            <ul id="original" class="ztree"></ul>
+        </div>
+        <div id="left" class="ctn">
+            <p class="tree-name btn" id="allToRight" onclick="allTo('lTree','rTree')">allToRight</p>
+            <ul id="lTree" class="ztree" style="width:260px;"></ul>
+        </div>
+        <div id="right" class="ctn">
+            <p class="tree-name btn" id="allToLeft" onclick="allTo('rTree','lTree')">allToLeft</p>
+            <ul id="rTree" class="ztree" style="width:260px;"></ul>
+        </div>
+    </div>
+    <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
+    <script src="../zTree_v3/js/jquery.ztree.core.js"></script>
+    <script src="../zTree_v3/js/jquery.ztree.excheck.js"></script>
+    <script>
+    var zTree;
+    var originalSetting = {
+        edit: {
+            enable: true,
+        },
+        view: {
+            selectedMulti: false,
+            showLine: false,
+        },
+        data: {
+            simpleData: {
+                enable: true,
+                idKey: "id",
+                pIdKey: "pId",
+                rootPId: ""
+            }
+        },
+        callback: {
+            onClick: originalTreeOnClick
+        }
+    };
+    var originalNodes = [{
+            name: "test1",
+            open: true,
+            children: [{
+                    name: "test1_1",
+                    children: [
+                        { name: "test1_1_1" },
+                        { name: "test1_1_2" }
+                    ]
+                },
+                { name: "test1_2" }
+            ]
+        },
+        {
+            name: "test2",
+            open: true,
+            children: [
+                { name: "test2_1" },
+                { name: "test2_2" }
+            ]
+        }
+    ];
+
+    // 左边配置
+    var leftSetting = {
+        edit: {
+            enable: true,
+        },
+        view: {
+            selectedMulti: false,
+            showLine: false,
+        },
+        data: {
+            simpleData: {
+                enable: true,
+                idKey: "id",
+                pIdKey: "pId",
+                rootPId: ""
+            }
+        },
+        callback: {
+            onDblClick: lTreeOnClick
+        }
+    };
+    var leftNodes = [];
+
+
+
+    // 右边配置
+    var rightSetting = {
+        edit: {
+            enable: true,
+        },
+        view: {
+            selectedMulti: false,
+            showLine: false,
+        },
+        data: {
+            simpleData: {
+                enable: true,
+                idKey: "id",
+                pIdKey: "pId",
+                rootPId: ""
+            }
+        },
+        callback: {
+            onDblClick: rTreeOnClick
+        }
+    };
+    var rightNodes = [];
+    $(document).ready(function() {
+        var original = $("#original");
+        original = $.fn.zTree.init(original, originalSetting, originalNodes);
+
+        var l = $("#lTree");
+        l = $.fn.zTree.init(l, leftSetting, leftNodes);
+
+        var r = $("#rTree");
+        r = $.fn.zTree.init(r, rightSetting, rightNodes);
+    });
+    //点击原始树
+    function originalTreeOnClick(event, treeId, treeNode) {
+        var lTree = $.fn.zTree.getZTreeObj("lTree");
+        var rTree = $.fn.zTree.getZTreeObj("rTree");
+        var lNodes = lTree.getNodes();
+        var rNodes = rTree.getNodes();
+        if (treeNode.children) {
+            var isAppend = true;
+            var data = treeNode.children
+            for (var i = 0; i < data.length; i++) {
+                for (var j = 0; j < lNodes.length; j++) {
+                    if (data[i].name == lNodes[j].name) {
+                        isAppend = false
+                        return
+                    }
+                }
+            }
+            for (var m = 0; m < data.length; m++) {
+                for (var q = 0; q < rNodes.length; q++) {
+                    if (data[m].name == rNodes[1].name) {
+                        isAppend = false
+                        return
+                    }
+                }
+            }
+            if (isAppend) {
+                lTree.addNodes(null, data);
+            }
+
+        } else {
+            var isadd = true;
+            for (var n = 0; n < lNodes.length; n++) {
+                if (treeNode.name == lNodes[n].name) {
+                    isadd = false
+                    return
+                }
+            }
+            for (var d = 0; d < rNodes.length; d++) {
+                if (treeNode.name == rNodes[d].name) {
+                    isadd = false
+                    return
+                }
+            }
+            if (isadd) {
+                lTree.addNodes(null, treeNode);
+            }
+        }
+    }
+    //点左边树
+    function lTreeOnClick(event, treeId, treeNode) {
+        var lTree = $.fn.zTree.getZTreeObj("lTree");
+        var rTree = $.fn.zTree.getZTreeObj("rTree");
+        lTree.removeNode(treeNode);
+        rTree.addNodes(null, treeNode);
+    };
+    //点右边树
+    function rTreeOnClick(event, treeId, treeNode) {
+        var lTree = $.fn.zTree.getZTreeObj("lTree");
+        var rTree = $.fn.zTree.getZTreeObj("rTree");
+        rTree.removeNode(treeNode);
+        lTree.addNodes(null, treeNode);
+    };
+    //全部转移
+    function allTo(from, to) {
+        var from = $.fn.zTree.getZTreeObj(from);
+        var to = $.fn.zTree.getZTreeObj(to);
+        var fromNodes = from.getNodes();
+        to.addNodes(null, fromNodes);
+        for (var i = fromNodes.length; i >= 0; i--) {
+            from.removeNode(fromNodes[i]);
+        }
+    }
+    </script>
+</body>
+
+</html>
